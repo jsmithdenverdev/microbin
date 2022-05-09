@@ -11,7 +11,8 @@ const (
 	PasteTypeText
 )
 
-// Paste represents a piece of content that will be persisted for a duration or indefinitely. It can be text or binary content.
+// Paste represents a piece of content that will be persisted for a duration or
+// indefinitely. It can be text or binary content.
 type Paste struct {
 	ID int `json:"id" gorm:"primaryKey"`
 	// Content represents the text content uploaded as a paste.
