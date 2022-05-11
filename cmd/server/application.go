@@ -16,22 +16,26 @@ import (
 	"gorm.io/gorm"
 )
 
-type server struct {
+type application struct {
 	infoLog      *log.Logger
 	errorLog     *log.Logger
 	router       *mux.Router
 	pasteService *microbin.PasteService
+	auth         struct {
+		username string
+		password string
+	}
 }
 
-func (s *server) handleCreatePaste() http.HandlerFunc {
+func (a *application) handleCreatePaste() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		switch strings.Split(r.Header.Get("Content-Type"), ";")[0] {
 		case "application/json":
-			s.handleCreatePasteRaw(w, r)
+			a.handleCreatePasteRaw(w, r)
 			return
 		case "multipart/form-data":
-			s.handleCreatePasteFile(w, r)
+			a.handleCreatePasteFile(w, r)
 			return
 		default:
 			w.Header().Add("Content-Type", "text/plain")
@@ -41,7 +45,7 @@ func (s *server) handleCreatePaste() http.HandlerFunc {
 	}
 }
 
-func (s *server) handleCreatePasteRaw(w http.ResponseWriter, r *http.Request) {
+func (a *application) handleCreatePasteRaw(w http.ResponseWriter, r *http.Request) {
 	paste := microbin.Paste{}
 	dec := json.NewDecoder(r.Body)
 
@@ -51,7 +55,7 @@ func (s *server) handleCreatePasteRaw(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := s.pasteService.Create(paste)
+	id, err := a.pasteService.Create(paste)
 
 	if err != nil {
 		w.Header().Add("Content-Type", "text/plain")
@@ -64,7 +68,7 @@ func (s *server) handleCreatePasteRaw(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(strconv.Itoa(int(id))))
 }
 
-func (s *server) handleCreatePasteFile(w http.ResponseWriter, r *http.Request) {
+func (a *application) handleCreatePasteFile(w http.ResponseWriter, r *http.Request) {
 	const MAX_UPLOAD_SIZE = 1024 * 1024
 
 	r.Body = http.MaxBytesReader(w, r.Body, MAX_UPLOAD_SIZE)
@@ -97,7 +101,7 @@ func (s *server) handleCreatePasteFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := s.pasteService.Create(paste)
+	id, err := a.pasteService.Create(paste)
 
 	if err != nil {
 		w.Header().Add("Content-Type", "text/plain")
@@ -110,21 +114,21 @@ func (s *server) handleCreatePasteFile(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(strconv.Itoa(int(id))))
 }
 
-func (s *server) handleReadPaste() http.HandlerFunc {
+func (a *application) handleReadPaste() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		sID := mux.Vars(r)["id"]
 
 		id, err := strconv.Atoi(sID)
 
 		if err != nil {
-			s.errorLog.Printf("could not parse id from request: %s\n", err.Error())
+			a.errorLog.Printf("could not parse id from request: %s\n", err.Error())
 
 			w.Header().Add("Content-Type", "text/plain")
 			http.Error(w, "ID parameter must be an integer.", http.StatusBadRequest)
 			return
 		}
 
-		paste, err := s.pasteService.Read(id)
+		paste, err := a.pasteService.Read(id)
 
 		if err != nil {
 			// FIXME: Don't leak ORM implementation details to the controller (gorm.ErrRecordNotFound)
@@ -157,21 +161,21 @@ func (s *server) handleReadPaste() http.HandlerFunc {
 	}
 }
 
-func (s *server) handleReadRawPaste() http.HandlerFunc {
+func (a *application) handleReadRawPaste() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		sID := mux.Vars(r)["id"]
 
 		id, err := strconv.Atoi(sID)
 
 		if err != nil {
-			s.errorLog.Printf("could not parse id from request: %s\n", err.Error())
+			a.errorLog.Printf("could not parse id from request: %s\n", err.Error())
 
 			w.Header().Add("Content-Type", "text/plain")
 			http.Error(w, "ID parameter must be an integer.", http.StatusBadRequest)
 			return
 		}
 
-		paste, err := s.pasteService.Read(id)
+		paste, err := a.pasteService.Read(id)
 
 		if err != nil {
 			// FIXME: Don't leak ORM implementation details to the controller (gorm.ErrRecordNotFound)
@@ -210,21 +214,21 @@ func (s *server) handleReadRawPaste() http.HandlerFunc {
 	}
 }
 
-func (s *server) handleDeletePaste() http.HandlerFunc {
+func (a *application) handleDeletePaste() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		sID := mux.Vars(r)["id"]
 
 		id, err := strconv.Atoi(sID)
 
 		if err != nil {
-			s.errorLog.Printf("could not parse id from request: %s\n", err.Error())
+			a.errorLog.Printf("could not parse id from request: %s\n", err.Error())
 
 			w.Header().Add("Content-Type", "text/plain")
 			http.Error(w, "ID parameter must be an integer.", http.StatusBadRequest)
 			return
 		}
 
-		err = s.pasteService.Delete(id)
+		err = a.pasteService.Delete(id)
 
 		if err != nil {
 			w.Header().Add("Content-Type", "text/plain")
@@ -238,9 +242,9 @@ func (s *server) handleDeletePaste() http.HandlerFunc {
 	}
 }
 
-func (s *server) handleListPastes() http.HandlerFunc {
+func (a *application) handleListPastes() http.HandlerFunc {
 	return func(w http.ResponseWriter, _ *http.Request) {
-		pastes, err := s.pasteService.List()
+		pastes, err := a.pasteService.List()
 
 		if err != nil {
 			w.Header().Add("Content-Type", "text/plain")

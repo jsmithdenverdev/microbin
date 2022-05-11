@@ -1,43 +1,30 @@
 package main
 
-import "net/http"
-
-func (s *server) routes() {
-	pasteRouter := s.router.PathPrefix("/paste").Subrouter()
+func (a *application) routes() {
+	pasteRouter := a.router.PathPrefix("/paste").Subrouter()
 
 	// POST /paste
 	pasteRouter.
-		HandleFunc("", s.handleCreatePaste()).
+		HandleFunc("", a.handleCreatePaste()).
 		Methods("POST")
 
 	// GET /paste
 	pasteRouter.
-		HandleFunc("", s.handleListPastes()).
+		HandleFunc("", a.handleListPastes()).
 		Methods("GET")
 
 	// GET /paste/{id}
 	pasteRouter.
-		HandleFunc("/{id}", s.handleReadPaste()).
+		HandleFunc("/{id}", a.handleReadPaste()).
 		Methods("GET")
 
 	// DELETE /paste/{id}
 	pasteRouter.
-		HandleFunc("/{id}", s.handleDeletePaste()).
+		HandleFunc("/{id}", a.handleDeletePaste()).
 		Methods("DELETE")
 
 		// GET /paste/{id}/raw
 	pasteRouter.
-		HandleFunc("/{id}/raw", s.handleReadRawPaste()).
+		HandleFunc("/{id}/raw", a.handleReadRawPaste()).
 		Methods("GET")
-}
-
-func (s *server) middleware() {
-	// Logging
-	s.router.Use(func(next http.Handler) http.Handler {
-		return http.HandlerFunc((func(w http.ResponseWriter, r *http.Request) {
-			s.infoLog.Printf("%s %s\n", r.Method, r.URL.Path)
-
-			next.ServeHTTP(w, r)
-		}))
-	})
 }
