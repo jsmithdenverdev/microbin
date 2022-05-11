@@ -17,6 +17,18 @@ func main() {
 	conn := flag.String("conn", "microbin.db", "Sqlite3 database connection string")
 	port := flag.Int("port", 8080, "Server port to listen for incoming connections")
 
+	username := os.Getenv("AUTH_USERNAME")
+
+	password := os.Getenv("AUTH_PASSWORD")
+
+	if username == "" {
+		log.Fatal("basic auth username must be provided")
+	}
+
+	if password == "" {
+		log.Fatal("basic auth password must be provided")
+	}
+
 	infoLog := log.New(os.Stdout, "INFO ", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR ", log.Ldate|log.Ltime)
 
@@ -26,7 +38,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	s := server{
+	a := application{
 		infoLog:  infoLog,
 		errorLog: errorLog,
 		router:   mux.NewRouter(),
@@ -35,15 +47,22 @@ func main() {
 			infoLog,
 			errorLog,
 		),
+		auth: struct {
+			username string
+			password string
+		}{
+			username: username,
+			password: password,
+		},
 	}
 
 	// configure middleware on the server
-	s.middleware()
+	a.middleware()
 
 	// configure routes on the server
-	s.routes()
+	a.routes()
 
-	if err := http.ListenAndServe(fmt.Sprintf(":%d", *port), s.router); err != nil && err != http.ErrServerClosed {
+	if err := http.ListenAndServe(fmt.Sprintf(":%d", *port), a.router); err != nil && err != http.ErrServerClosed {
 		log.Fatal(err)
 	}
 }
