@@ -148,7 +148,6 @@ func (p *pasteHandler) handleRead() http.HandlerFunc {
 		}
 
 		w.Header().Add("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
 
 		enc := json.NewEncoder(w)
 
@@ -195,19 +194,16 @@ func (p *pasteHandler) handleReadRaw() http.HandlerFunc {
 		}
 
 		// paste is just text content
-		if paste.File == "" {
+		if paste.Type == microbin.PasteTypeText {
 			w.Header().Add("Content-Type", "text/plain")
-			w.WriteHeader(http.StatusOK)
 			w.Write([]byte(paste.Content))
 		}
 
-		// TECHDEBT: Create a ContentType on the Paste to avoid doing these checks
-		if len(paste.BinaryContent) > 0 {
+		if paste.Type == microbin.PasteTypeFile {
 			ext := filepath.Ext(paste.File)
 			mimetype := mime.TypeByExtension(ext)
 
 			w.Header().Set("Content-Type", mimetype)
-			w.WriteHeader(http.StatusOK)
 			w.Write(paste.BinaryContent)
 		}
 	}
@@ -236,7 +232,6 @@ func (p *pasteHandler) handleDelete() http.HandlerFunc {
 		}
 
 		w.Header().Add("Content-Type", "text/plain")
-		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(strconv.Itoa(id)))
 	}
 }
@@ -252,7 +247,6 @@ func (p *pasteHandler) handleList() http.HandlerFunc {
 		}
 
 		w.Header().Add("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
 
 		enc := json.NewEncoder(w)
 
