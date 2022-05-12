@@ -7,8 +7,9 @@ import (
 type PasteType int
 
 const (
-	PasteTypeURL PasteType = iota
-	PasteTypeText
+	PasteTypeText PasteType = iota
+	PasteTypeFile
+	PasteTypeURL
 )
 
 // Paste represents a piece of content that will be persisted for a duration or

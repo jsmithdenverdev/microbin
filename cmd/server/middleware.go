@@ -46,5 +46,5 @@ func authMiddleware(expectedUsername, expectedPassword string) mux.MiddlewareFun
 
 func (a *application) middleware() {
 	a.router.Use(loggingMiddleware(a.infoLog))
-	a.router.Use(authMiddleware(a.auth.username, a.auth.password))
+	a.router.Use(authMiddleware(a.config.username, a.config.password))
 }

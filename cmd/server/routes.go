@@ -5,26 +5,26 @@ func (a *application) routes() {
 
 	// POST /paste
 	pasteRouter.
-		HandleFunc("", a.handleCreatePaste()).
+		HandleFunc("", a.pasteHandler.handleCreate()).
 		Methods("POST")
 
 	// GET /paste
 	pasteRouter.
-		HandleFunc("", a.handleListPastes()).
+		HandleFunc("", a.pasteHandler.handleList()).
 		Methods("GET")
 
 	// GET /paste/{id}
 	pasteRouter.
-		HandleFunc("/{id}", a.handleReadPaste()).
+		HandleFunc("/{id}", a.pasteHandler.handleRead()).
 		Methods("GET")
 
 	// DELETE /paste/{id}
 	pasteRouter.
-		HandleFunc("/{id}", a.handleDeletePaste()).
+		HandleFunc("/{id}", a.pasteHandler.handleDelete()).
 		Methods("DELETE")
 
 		// GET /paste/{id}/raw
 	pasteRouter.
-		HandleFunc("/{id}/raw", a.handleReadRawPaste()).
+		HandleFunc("/{id}/raw", a.pasteHandler.handleReadRaw()).
 		Methods("GET")
 }
