@@ -11,5 +11,6 @@ type application struct {
 	infoLog      *log.Logger
 	errorLog     *log.Logger
 	router       *mux.Router
+	authHandler  authHandler
 	pasteHandler pasteHandler
 }

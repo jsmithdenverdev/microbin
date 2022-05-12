@@ -1,7 +1,13 @@
 package main
 
 func (a *application) routes() {
+	authRouter := a.router.PathPrefix("/auth").Subrouter()
 	pasteRouter := a.router.PathPrefix("/paste").Subrouter()
+
+	// POST/GET /auth
+	authRouter.
+		HandleFunc("", a.authHandler.handleAuth()).
+		Methods("POST", "GET")
 
 	// POST /paste
 	pasteRouter.
