@@ -22,3 +22,6 @@ go.work
 
 # Sqlite3 databases
 *.db
+
+# Mac folder meta
+.DS_Store
