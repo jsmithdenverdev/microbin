@@ -1,4 +1,4 @@
-package microbin
+package main
 
 import (
 	"log"
@@ -6,28 +6,19 @@ import (
 	"gorm.io/gorm"
 )
 
-type PasteService struct {
-	infoLog  *log.Logger
-	errorLog *log.Logger
-	db       *gorm.DB
-}
-
-func NewPasteService(db *gorm.DB, infoLog, errorLog *log.Logger) *PasteService {
-	return &PasteService{
-		db:       db,
-		infoLog:  infoLog,
-		errorLog: errorLog,
-	}
+type pasteService struct {
+	logger *log.Logger
+	db     *gorm.DB
 }
 
 // Create valiates the incoming Paste before persisting it to the datastore.
-func (p *PasteService) Create(paste Paste) (int, error) {
+func (p *pasteService) Create(paste Paste) (int, error) {
 	if paste.Expiration == "" {
-		return 0, ErrorUnrecognizedExpiration{}
+		return 0, errorUnrecognizedExpiration{}
 	}
 
-	if !ValidExpiration(paste.Expiration) {
-		return 0, ErrorUnrecognizedExpiration{paste.Expiration}
+	if !expirationIsValid(paste.Expiration) {
+		return 0, errorUnrecognizedExpiration{paste.Expiration}
 	}
 
 	result := p.db.Create(&paste)
@@ -42,7 +33,7 @@ func (p *PasteService) Create(paste Paste) (int, error) {
 // Read finds a Paste with the given id in the datastore. If the Paste has
 // expired it is expunged and an ErrorPasteExpired error is returned to the
 // caller.
-func (p *PasteService) Read(id int) (Paste, error) {
+func (p *pasteService) Read(id int) (Paste, error) {
 	paste := Paste{}
 
 	if err := p.db.First(&paste, id).Error; err != nil {
@@ -55,7 +46,7 @@ func (p *PasteService) Read(id int) (Paste, error) {
 			return Paste{}, err
 		}
 
-		return Paste{}, ErrorPasteExpired{ID: id}
+		return Paste{}, errorPasteExpired{ID: id}
 	}
 
 	return paste, nil
@@ -63,7 +54,7 @@ func (p *PasteService) Read(id int) (Paste, error) {
 
 // Delete deletes a Paste with the given id from the datastore. If an error
 // occurs it is returned to the caller.
-func (p *PasteService) Delete(id int) error {
+func (p *pasteService) Delete(id int) error {
 	if tx := p.db.Delete(&Paste{}, id); tx.Error != nil {
 		return tx.Error
 	}
@@ -73,7 +64,7 @@ func (p *PasteService) Delete(id int) error {
 
 // List returns all the Paste's in the datastore. Any Paste's that have expired
 // are deleted from the datastore and expunged from the result set.
-func (p *PasteService) List() ([]Paste, error) {
+func (p *pasteService) List() ([]Paste, error) {
 	pastesRet := []Paste{}
 	pastes := []Paste{}
 

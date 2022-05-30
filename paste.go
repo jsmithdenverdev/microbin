@@ -1,15 +1,15 @@
-package microbin
+package main
 
 import (
 	"time"
 )
 
-type PasteType int
+type pasteType int
 
 const (
-	PasteTypeText PasteType = iota
-	PasteTypeFile
-	PasteTypeURL
+	pasteTypeText pasteType = iota
+	pasteTypeFile
+	pasteTypeURL
 )
 
 // Paste represents a piece of content that will be persisted for a duration or
@@ -22,7 +22,7 @@ type Paste struct {
 	BinaryContent []byte    `json:"-"`
 	File          string    `json:"file"`
 	Expiration    string    `json:"expiration"`
-	Type          PasteType `json:"type"`
+	Type          pasteType `json:"type"`
 	CreatedAt     time.Time `json:"createdAt"`
 }
 

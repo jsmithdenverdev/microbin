@@ -6,11 +6,9 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type application struct {
+type server struct {
 	config       config
-	infoLog      *log.Logger
-	errorLog     *log.Logger
+	logger       *log.Logger
 	router       *mux.Router
-	authHandler  authHandler
 	pasteHandler pasteHandler
 }

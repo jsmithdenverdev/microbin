@@ -12,14 +12,12 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
-	"github.com/jsmithdenverdev/microbin"
 	"gorm.io/gorm"
 )
 
 type pasteHandler struct {
-	infoLog      *log.Logger
-	errorLog     *log.Logger
-	pasteService *microbin.PasteService
+	logger       *log.Logger
+	pasteService pasteService
 }
 
 func (p *pasteHandler) handleCreate() http.HandlerFunc {
@@ -41,7 +39,7 @@ func (p *pasteHandler) handleCreate() http.HandlerFunc {
 }
 
 func (p *pasteHandler) handleCreateText(w http.ResponseWriter, r *http.Request) {
-	paste := new(microbin.Paste)
+	paste := new(Paste)
 
 	dec := json.NewDecoder(r.Body)
 
@@ -51,7 +49,7 @@ func (p *pasteHandler) handleCreateText(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	paste.Type = microbin.PasteTypeText
+	paste.Type = pasteTypeText
 
 	id, err := p.pasteService.Create(*paste)
 
@@ -69,7 +67,7 @@ func (p *pasteHandler) handleCreateText(w http.ResponseWriter, r *http.Request) 
 func (p *pasteHandler) handleCreateFile(w http.ResponseWriter, r *http.Request) {
 	const MAX_UPLOAD_SIZE = 1024 * 1024
 
-	paste := new(microbin.Paste)
+	paste := new(Paste)
 
 	r.Body = http.MaxBytesReader(w, r.Body, MAX_UPLOAD_SIZE)
 
@@ -89,7 +87,7 @@ func (p *pasteHandler) handleCreateFile(w http.ResponseWriter, r *http.Request) 
 
 	defer file.Close()
 
-	paste.Type = microbin.PasteTypeFile
+	paste.Type = pasteTypeFile
 	paste.Expiration = r.Header.Get("Expiration")
 	paste.File = fileHeader.Filename
 	paste.BinaryContent, err = ioutil.ReadAll(file)
@@ -120,7 +118,7 @@ func (p *pasteHandler) handleRead() http.HandlerFunc {
 		id, err := strconv.Atoi(sID)
 
 		if err != nil {
-			p.errorLog.Printf("could not parse id from request: %s\n", err.Error())
+			p.logger.Printf("[ERROR] could not parse id from request: %s\n", err.Error())
 
 			w.Header().Add("Content-Type", "text/plain")
 			http.Error(w, "ID parameter must be an integer.", http.StatusBadRequest)
@@ -131,7 +129,7 @@ func (p *pasteHandler) handleRead() http.HandlerFunc {
 
 		if err != nil {
 			// FIXME: Don't leak ORM implementation details to the controller (gorm.ErrRecordNotFound)
-			if errors.As(err, &microbin.ErrorPasteExpired{}) || errors.Is(err, gorm.ErrRecordNotFound) {
+			if errors.As(err, &errorPasteExpired{}) || errors.Is(err, gorm.ErrRecordNotFound) {
 				w.WriteHeader(http.StatusNotFound)
 				return
 			}
@@ -166,7 +164,7 @@ func (p *pasteHandler) handleReadRaw() http.HandlerFunc {
 		id, err := strconv.Atoi(sID)
 
 		if err != nil {
-			p.errorLog.Printf("could not parse id from request: %s\n", err.Error())
+			p.logger.Printf("[ERROR] could not parse id from request: %s\n", err.Error())
 
 			w.Header().Add("Content-Type", "text/plain")
 			http.Error(w, "ID parameter must be an integer.", http.StatusBadRequest)
@@ -177,7 +175,7 @@ func (p *pasteHandler) handleReadRaw() http.HandlerFunc {
 
 		if err != nil {
 			// FIXME: Don't leak ORM implementation details to the controller (gorm.ErrRecordNotFound)
-			if errors.As(err, &microbin.ErrorPasteExpired{}) || errors.Is(err, gorm.ErrRecordNotFound) {
+			if errors.As(err, &errorPasteExpired{}) || errors.Is(err, gorm.ErrRecordNotFound) {
 				w.WriteHeader(http.StatusNotFound)
 				return
 			}
@@ -194,12 +192,12 @@ func (p *pasteHandler) handleReadRaw() http.HandlerFunc {
 		}
 
 		// paste is just text content
-		if paste.Type == microbin.PasteTypeText {
+		if paste.Type == pasteTypeText {
 			w.Header().Add("Content-Type", "text/plain")
 			w.Write([]byte(paste.Content))
 		}
 
-		if paste.Type == microbin.PasteTypeFile {
+		if paste.Type == pasteTypeFile {
 			ext := filepath.Ext(paste.File)
 			mimetype := mime.TypeByExtension(ext)
 
@@ -216,7 +214,7 @@ func (p *pasteHandler) handleDelete() http.HandlerFunc {
 		id, err := strconv.Atoi(sID)
 
 		if err != nil {
-			p.errorLog.Printf("could not parse id from request: %s\n", err.Error())
+			p.logger.Printf("[ERROR] could not parse id from request: %s\n", err.Error())
 
 			w.Header().Add("Content-Type", "text/plain")
 			http.Error(w, "ID parameter must be an integer.", http.StatusBadRequest)

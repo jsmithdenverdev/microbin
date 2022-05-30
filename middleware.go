@@ -5,19 +5,10 @@ import (
 	"crypto/subtle"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 )
-
-func loggingMiddleware(info *log.Logger) mux.MiddlewareFunc {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc((func(w http.ResponseWriter, r *http.Request) {
-			info.Printf("%s %s\n", r.Method, r.URL.Path)
-
-			next.ServeHTTP(w, r)
-		}))
-	}
-}
 
 func authMiddleware(expectedUsername, expectedPassword string) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
@@ -44,7 +35,26 @@ func authMiddleware(expectedUsername, expectedPassword string) mux.MiddlewareFun
 	}
 }
 
-func (a *application) middleware() {
-	a.router.Use(loggingMiddleware(a.infoLog))
-	a.router.Use(authMiddleware(a.config.username, a.config.password))
+func loggingMiddleware(info *log.Logger) mux.MiddlewareFunc {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc((func(w http.ResponseWriter, r *http.Request) {
+			info.Printf("%s %s\n", r.Method, r.URL.Path)
+
+			next.ServeHTTP(w, r)
+		}))
+	}
+}
+
+func timingMiddleware(logger *log.Logger) mux.MiddlewareFunc {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			start := time.Now()
+
+			next.ServeHTTP(w, r)
+
+			duration := time.Since(start)
+
+			logger.Printf("%s %s took %f seconds\n", r.Method, r.URL.Path, duration.Seconds())
+		})
+	}
 }
