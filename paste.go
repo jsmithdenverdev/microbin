@@ -1,34 +1,36 @@
-package main
+package microbin
 
 import (
 	"time"
 )
 
-type pasteType int
+type PasteType int
 
 const (
-	pasteTypeText pasteType = iota
-	pasteTypeFile
-	pasteTypeURL
+	PasteTypeText PasteType = iota
+	PasteTypeFile
+	PasteTypeURL
 )
 
 // Paste represents a piece of content that will be persisted for a duration or
 // indefinitely. It can be text or binary content.
 type Paste struct {
-	ID int `json:"id" gorm:"primaryKey"`
+	ID int `json:"id"`
 	// Content represents the text content uploaded as a paste.
 	Content string `json:"content"`
 	// BinaryContent represents a file that has been uploaded as a paste. It is omitted from JSON responses.
-	BinaryContent []byte    `json:"-"`
-	File          string    `json:"file"`
-	Expiration    string    `json:"expiration"`
-	Type          pasteType `json:"type"`
-	CreatedAt     time.Time `json:"createdAt"`
+	BinaryContent []byte     `json:"-"`
+	File          string     `json:"file"`
+	Expiration    Expiration `json:"expiration"`
+	Type          PasteType  `json:"type"`
+	CreatedAt     time.Time  `json:"createdAt"`
 }
 
 func (p *Paste) Expired() bool {
-	now := time.Now()
-	duration := expirationDuration[p.Expiration]
+	var (
+		now      = time.Now()
+		duration = p.Expiration.ToDuration()
+	)
 
 	return p.CreatedAt.Add(duration).Before(now)
 }
