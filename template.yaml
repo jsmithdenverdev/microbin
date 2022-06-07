@@ -1,0 +1,152 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: Microbin, a serverless Pastebin clone.
+Globals:
+  Function:
+    Environment:
+      Variables:
+        TABLE_NAME: paste
+Resources:
+  MicrobinApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Cors: "'*'"
+      Auth:
+        DefaultAuthorizer: BasicAuthorizer
+        Authorizers:
+          BasicAuthorizer:
+            FunctionArn: !GetAtt AuthFunction.Arn
+  AuthFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./cmd/authorize
+      Handler: authorize
+      Runtime: go1.x
+      Tracing: Active
+      Environment:
+        Variables:
+          USERNAME: "{{resolve:ssm:/microbin/auth/username}}"
+          PASSWORD: "{{resolve:ssm:/microbin/auth/password}}"
+  CreatePasteFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./cmd/create-paste
+      Handler: create-paste
+      Runtime: go1.x
+      Tracing: Active
+      Events:
+        Default:
+          Type: Api
+          Properties:
+            RestApiId: !Ref MicrobinApi
+            Path: /
+            Method: post
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - Version: "2012-10-17"
+          Statement:
+            Effect: Allow
+            Action:
+              - dynamodb:DescribeTable
+              - dynamodb:PutItem
+              - dynamodb:UpdateItem
+            Resource:
+              - arn:aws:dynamodb:*:*:table/paste
+      Environment:
+        Variables:
+          TABLE_NAME: !Select [1, !Split ["/", !GetAtt PasteTable.Arn]]
+  ListPastesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./cmd/delete-paste
+      Handler: delete-paste
+      Runtime: go1.x
+      Tracing: Active
+      Events:
+        Default:
+          Type: Api
+          Properties:
+            RestApiId: !Ref MicrobinApi
+            Path: /
+            Method: get
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - Version: "2012-10-17"
+          Statement:
+            Effect: Allow
+            Action:
+              - dynamodb:DescribeTable
+              - dynamodb:Scan
+            Resource:
+              - arn:aws:dynamodb:*:*:table/paste
+      Environment:
+        Variables:
+          TABLE_NAME: !Select [1, !Split ["/", !GetAtt PasteTable.Arn]]
+  ReadPasteFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./cmd/read-paste
+      Handler: read-paste
+      Runtime: go1.x
+      Tracing: Active
+      Events:
+        Default:
+          Type: Api
+          Properties:
+            RestApiId: !Ref MicrobinApi
+            Path: /{id}
+            Method: get
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - Version: "2012-10-17"
+          Statement:
+            Effect: Allow
+            Action:
+              - dynamodb:DescribeTable
+              - dynamodb:Get*
+            Resource:
+              - arn:aws:dynamodb:*:*:table/paste
+      Environment:
+        Variables:
+          TABLE_NAME: !Select [1, !Split ["/", !GetAtt PasteTable.Arn]]
+  DeletePasteFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./cmd/delete-paste
+      Handler: delete-paste
+      Runtime: go1.x
+      Tracing: Active
+      Events:
+        Default:
+          Type: Api
+          Properties:
+            RestApiId: !Ref MicrobinApi
+            Path: /{id}
+            Method: delete
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - Version: "2012-10-17"
+          Statement:
+            Effect: Allow
+            Action:
+              - dynamodb:DescribeTable
+              - dynamodb:Delete*
+            Resource:
+              - arn:aws:dynamodb:*:*:table/paste
+      Environment:
+        Variables:
+          TABLE_NAME: !Select [1, !Split ["/", !GetAtt PasteTable.Arn]]
+  PasteTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: paste
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
