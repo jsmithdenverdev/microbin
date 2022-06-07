@@ -15,16 +15,16 @@ func loadConfig() (config, error) {
 	missing := []string{}
 
 	var (
-		username = os.Getenv("AUTH_USERNAME")
-		password = os.Getenv("AUTH_PASSWORD")
+		username = os.Getenv("USERNAME")
+		password = os.Getenv("PASSWORD")
 	)
 
 	if username == "" {
-		missing = append(missing, "AUTH_USERNAME")
+		missing = append(missing, "USERNAME")
 	}
 
 	if password == "" {
-		missing = append(missing, "AUTH_PASSWORD")
+		missing = append(missing, "PASSWORD")
 	}
 
 	if len(missing) > 0 {
