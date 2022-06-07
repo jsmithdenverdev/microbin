@@ -27,7 +27,7 @@ func main() {
 	var (
 		client  = dynamoclient.NewFromConfig(conf)
 		store   = dynamodb.PasteStore{Client: client, Table: config.tablename}
-		handler = lambda.CreateHandler{Store: &store}
+		handler = lambda.CreatePasteHandler{Store: &store}
 	)
 
 	runtime.Start(handler.HandleAPIGateway)
