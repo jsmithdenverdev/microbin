@@ -39,7 +39,7 @@ func (s *PasteStore) Read(ctx context.Context, id int) (microbin.Paste, error) {
 	result, err := s.Client.GetItem(ctx, &dynamodb.GetItemInput{
 		TableName: aws.String(s.Table),
 		Key: map[string]types.AttributeValue{
-			"id": types.AttributeValueMemberN{
+			"id": &types.AttributeValueMemberN{
 				Value: strconv.Itoa(id),
 			},
 		},
@@ -64,7 +64,7 @@ func (s *PasteStore) Delete(ctx context.Context, id int) error {
 	_, err := s.Client.DeleteItem(ctx, &dynamodb.DeleteItemInput{
 		TableName: aws.String(s.Table),
 		Key: map[string]types.AttributeValue{
-			"id": types.AttributeValueMemberN{
+			"id": &types.AttributeValueMemberN{
 				Value: strconv.Itoa(id),
 			},
 		},
