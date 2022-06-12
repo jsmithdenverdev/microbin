@@ -26,7 +26,7 @@ func (s *PasteStore) Create(ctx context.Context, p microbin.Paste) error {
 	_, err = s.Client.PutItem(ctx, &dynamodb.PutItemInput{
 		TableName: aws.String(s.Table),
 		Item:      item,
-	}, nil)
+	})
 
 	if err != nil {
 		return err
@@ -36,6 +36,8 @@ func (s *PasteStore) Create(ctx context.Context, p microbin.Paste) error {
 }
 
 func (s *PasteStore) Read(ctx context.Context, id int) (microbin.Paste, error) {
+	paste := microbin.Paste{}
+
 	result, err := s.Client.GetItem(ctx, &dynamodb.GetItemInput{
 		TableName: aws.String(s.Table),
 		Key: map[string]types.AttributeValue{
@@ -43,18 +45,19 @@ func (s *PasteStore) Read(ctx context.Context, id int) (microbin.Paste, error) {
 				Value: strconv.Itoa(id),
 			},
 		},
-	}, nil)
+	})
 
 	if err != nil {
-		return microbin.Paste{}, err
+		return paste, err
 	}
 
-	paste := microbin.Paste{}
+	if result.Item == nil {
+		return paste, microbin.ErrPasteNotFound
+	}
 
 	err = attributevalue.UnmarshalMap(result.Item, &paste)
-
 	if err != nil {
-		return microbin.Paste{}, err
+		return paste, err
 	}
 
 	return paste, nil
@@ -68,7 +71,7 @@ func (s *PasteStore) Delete(ctx context.Context, id int) error {
 				Value: strconv.Itoa(id),
 			},
 		},
-	}, nil)
+	})
 
 	if err != nil {
 		return err
