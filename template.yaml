@@ -26,8 +26,8 @@ Resources:
       Tracing: Active
       Environment:
         Variables:
-          USERNAME: "{{resolve:ssm:/microbin/auth/username}}"
-          PASSWORD: "{{resolve:ssm:/microbin/auth/password}}"
+          USERNAME: "{{resolve:secretsmanager:/microbin/auth:SecretString:username}}"
+          PASSWORD: "{{resolve:secretsmanager:/microbin/auth:SecretString:password}}"
   CreatePasteFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -143,7 +143,7 @@ Resources:
       TableName: paste
       AttributeDefinitions:
         - AttributeName: id
-          AttributeType: S
+          AttributeType: N
       KeySchema:
         - AttributeName: id
           KeyType: HASH
