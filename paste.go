@@ -33,6 +33,11 @@ func (p *Paste) Expired() bool {
 		duration = p.Expiration.ToDuration()
 	)
 
+	// when an empty paste is initailized the CreatedAt will be a 0 value
+	if p.CreatedAt.IsZero() {
+		return false
+	}
+
 	return p.CreatedAt.Add(duration).Before(now)
 }
 
@@ -61,7 +66,7 @@ func ReadPaste(store PasteStore) func(ctx context.Context, id int) (Paste, error
 				return Paste{}, err
 			}
 
-			return Paste{}, ErrExpiredPaste(id)
+			return Paste{}, ErrExpiredPaste
 		}
 
 		return paste, nil
