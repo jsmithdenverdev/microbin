@@ -1,41 +1,41 @@
-package main
+package microbin
 
 import "time"
 
-type pasteExpiration = string
+type Expiration string
 
 const (
-	pasteExpirationOneMin  pasteExpiration = "1min"
-	pasteExpirationTenMin  pasteExpiration = "10min"
-	pasteExpirationOneHour pasteExpiration = "1hour"
-	pasteExpirationOneDay  pasteExpiration = "1day"
-	pasteExpirationOneWeek pasteExpiration = "1week"
-	pasteExpirationNever   pasteExpiration = "never"
+	ExpirationOneMin  Expiration = "1min"
+	ExpirationTenMin  Expiration = "10min"
+	ExpirationOneHour Expiration = "1hour"
+	ExpirationOneDay  Expiration = "1day"
+	ExpirationOneWeek Expiration = "1week"
+	ExpirationNever   Expiration = "never"
 )
 
 var (
-	expirations = []pasteExpiration{
-		pasteExpirationOneMin,
-		pasteExpirationTenMin,
-		pasteExpirationOneHour,
-		pasteExpirationOneDay,
-		pasteExpirationOneWeek,
-		pasteExpirationNever,
+	expirations = []Expiration{
+		ExpirationOneMin,
+		ExpirationTenMin,
+		ExpirationOneHour,
+		ExpirationOneDay,
+		ExpirationOneWeek,
+		ExpirationNever,
 	}
 
-	expirationDuration = map[pasteExpiration]time.Duration{
-		pasteExpirationOneMin:  time.Minute,
-		pasteExpirationTenMin:  time.Minute * 10,
-		pasteExpirationOneHour: time.Hour,
-		pasteExpirationOneDay:  time.Hour * 24,
-		pasteExpirationOneWeek: time.Hour * 24 * 7,
-		pasteExpirationNever:   -1,
+	expirationDuration = map[Expiration]time.Duration{
+		ExpirationOneMin:  time.Minute,
+		ExpirationTenMin:  time.Minute * 10,
+		ExpirationOneHour: time.Hour,
+		ExpirationOneDay:  time.Hour * 24,
+		ExpirationOneWeek: time.Hour * 24 * 7,
+		ExpirationNever:   -1,
 	}
 )
 
-func expirationIsValid(s string) bool {
+func (e Expiration) IsValid() bool {
 	for _, expiration := range expirations {
-		if s == expiration {
+		if e == expiration {
 			return true
 		}
 	}

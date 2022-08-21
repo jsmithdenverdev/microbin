@@ -3,10 +3,11 @@ package main
 import (
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 
 	"github.com/gorilla/mux"
+	"github.com/jsmithdenverdev/microbin"
+	"github.com/jsmithdenverdev/microbin/http"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -24,36 +25,36 @@ func main() {
 		logger.Fatal(err)
 	}
 
-	db, err := connectDB(conf.connection)
+	db, err := connectDB(conf.Connection)
 
 	if err != nil {
 		logger.Fatal(err)
 	}
 
-	s := server{
-		config: conf,
-		logger: logger,
-		router: mux.NewRouter(),
-		pasteHandler: pasteHandler{
-			logger: logger,
-			pasteService: pasteService{
-				logger: logger,
-				db:     db,
+	s := http.Server{
+		Config: conf,
+		Logger: logger,
+		Router: mux.NewRouter(),
+		PasteHandler: http.PasteHandler{
+			Logger: logger,
+			PasteService: microbin.PasteService{
+				DB: db,
 			},
 		},
 	}
 
 	// configure middleware on the server
-	s.router.Use(loggingMiddleware(requestLogger))
-	s.router.Use(timingMiddleware(timingLogger))
-	s.router.Use(authMiddleware(conf.username, conf.password))
+	s.Router.Use(http.LoggingMiddleware(requestLogger))
+	s.Router.Use(http.TimingMiddleware(timingLogger))
+	s.Router.Use(http.AuthMiddleware(conf.Username, conf.Password))
 
 	// configure routes on the server
-	s.routes()
+	s.Routes()
 
-	if err := http.ListenAndServe(fmt.Sprintf(":%d", conf.port), s.router); err != nil && err != http.ErrServerClosed {
+	if err := s.ListenAndServe(fmt.Sprintf(":%d", conf.Port)); err != nil {
 		log.Fatal(err)
 	}
+
 }
 
 func connectDB(conn string) (*gorm.DB, error) {
@@ -63,7 +64,7 @@ func connectDB(conn string) (*gorm.DB, error) {
 		return &gorm.DB{}, err
 	}
 
-	if err := db.AutoMigrate(&Paste{}); err != nil {
+	if err := db.AutoMigrate(&microbin.Paste{}); err != nil {
 		return &gorm.DB{}, err
 	}
 

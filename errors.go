@@ -1,32 +1,24 @@
-package main
+package microbin
 
 import (
 	"fmt"
 )
 
-const (
-	errorInternalServer = "Internal Server Error"
-)
+type ErrorPasteExpired struct {
+	ID int
+}
 
-type (
-	errorPasteExpired struct {
-		ID int
-	}
-
-	errorUnrecognizedExpiration struct {
-		Expiration string
-	}
-)
-
-func (e errorPasteExpired) Error() string {
+func (e ErrorPasteExpired) Error() string {
 	return fmt.Sprintf("paste %d expired", e.ID)
 }
 
-func (e errorUnrecognizedExpiration) Error() string {
-	if e.Expiration == "" {
+type ErrorUnrecognizedExpiration struct {
+	Expiration Expiration
+}
 
+func (e ErrorUnrecognizedExpiration) Error() string {
+	if e.Expiration == "" {
 		return ("unrecognized expiration: none provided")
 	}
-
 	return fmt.Sprintf("unrecognized expiration: %s", e.Expiration)
 }

@@ -1,4 +1,4 @@
-package main
+package http
 
 import (
 	"crypto/sha256"
@@ -10,7 +10,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func authMiddleware(expectedUsername, expectedPassword string) mux.MiddlewareFunc {
+func AuthMiddleware(expectedUsername, expectedPassword string) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			username, password, ok := r.BasicAuth()
@@ -35,7 +35,7 @@ func authMiddleware(expectedUsername, expectedPassword string) mux.MiddlewareFun
 	}
 }
 
-func loggingMiddleware(info *log.Logger) mux.MiddlewareFunc {
+func LoggingMiddleware(info *log.Logger) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc((func(w http.ResponseWriter, r *http.Request) {
 			info.Printf("%s %s\n", r.Method, r.URL.Path)
@@ -45,7 +45,7 @@ func loggingMiddleware(info *log.Logger) mux.MiddlewareFunc {
 	}
 }
 
-func timingMiddleware(logger *log.Logger) mux.MiddlewareFunc {
+func TimingMiddleware(logger *log.Logger) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			start := time.Now()
