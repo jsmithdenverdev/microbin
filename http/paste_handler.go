@@ -130,7 +130,7 @@ func (p *PasteHandler) handleRead() http.HandlerFunc {
 
 		if err != nil {
 			// FIXME: Don't leak ORM implementation details to the controller (gorm.ErrRecordNotFound)
-			if errors.As(err, &errorPasteExpired{}) || errors.Is(err, gorm.ErrRecordNotFound) {
+			if errors.As(err, &microbin.ErrorPasteExpired{}) || errors.Is(err, gorm.ErrRecordNotFound) {
 				w.WriteHeader(http.StatusNotFound)
 				return
 			}
@@ -176,7 +176,7 @@ func (p *PasteHandler) handleReadRaw() http.HandlerFunc {
 
 		if err != nil {
 			// FIXME: Don't leak ORM implementation details to the controller (gorm.ErrRecordNotFound)
-			if errors.As(err, &errorPasteExpired{}) || errors.Is(err, gorm.ErrRecordNotFound) {
+			if errors.As(err, &microbin.ErrorPasteExpired{}) || errors.Is(err, gorm.ErrRecordNotFound) {
 				w.WriteHeader(http.StatusNotFound)
 				return
 			}
