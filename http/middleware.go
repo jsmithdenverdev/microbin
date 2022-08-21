@@ -35,17 +35,7 @@ func AuthMiddleware(expectedUsername, expectedPassword string) mux.MiddlewareFun
 	}
 }
 
-func LoggingMiddleware(info *log.Logger) mux.MiddlewareFunc {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc((func(w http.ResponseWriter, r *http.Request) {
-			info.Printf("%s %s\n", r.Method, r.URL.Path)
-
-			next.ServeHTTP(w, r)
-		}))
-	}
-}
-
-func TimingMiddleware(logger *log.Logger) mux.MiddlewareFunc {
+func LoggingMiddleware(logger *log.Logger) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			start := time.Now()
@@ -54,7 +44,7 @@ func TimingMiddleware(logger *log.Logger) mux.MiddlewareFunc {
 
 			duration := time.Since(start)
 
-			logger.Printf("%s %s took %f seconds\n", r.Method, r.URL.Path, duration.Seconds())
+			logger.Printf("%s %s => duration:  %f seconds\n", r.Method, r.URL.Path, duration.Seconds())
 		})
 	}
 }

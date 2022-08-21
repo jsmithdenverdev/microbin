@@ -15,7 +15,6 @@ import (
 func main() {
 	var (
 		requestLogger = log.New(os.Stdout, "", log.Ldate|log.Ltime)
-		timingLogger  = log.New(os.Stdout, "", log.Ldate|log.Ltime)
 		logger        = log.New(os.Stdout, "INFO ", log.Ldate|log.Ltime)
 	)
 
@@ -45,7 +44,6 @@ func main() {
 
 	// configure middleware on the server
 	s.Router.Use(http.LoggingMiddleware(requestLogger))
-	s.Router.Use(http.TimingMiddleware(timingLogger))
 	s.Router.Use(http.AuthMiddleware(conf.Username, conf.Password))
 
 	// configure routes on the server
