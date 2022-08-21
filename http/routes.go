@@ -1,7 +1,7 @@
 package http
 
 func (s *Server) Routes() {
-	pasteRouter := s.Router.PathPrefix("/paste").Subrouter()
+	pasteRouter := s.Router.PathPrefix("/pastes").Subrouter()
 
 	// POST /paste
 	pasteRouter.
