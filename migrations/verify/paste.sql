@@ -9,6 +9,7 @@ SELECT id
      , updated_at
      , content
      , expiration
+     , metadata
 FROM microbin.paste
 WHERE FALSE;
 ROLLBACK;
