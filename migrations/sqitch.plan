@@ -3,3 +3,4 @@
 %uri=https://github.com/jsmithdenverdev/microbin
 
 appschema 2022-10-25T04:54:30Z Jake Smith <jsmithdenverdev@gmail.com> # Add schema for all paste objects.
+paste_type [appschema] 2022-10-25T05:08:51Z Jake Smith <jsmithdenverdev@gmail.com> # Creates paste_type enum.
