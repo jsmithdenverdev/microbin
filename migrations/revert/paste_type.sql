@@ -2,6 +2,6 @@
 
 BEGIN;
 
-DROP TYPE paste_type;
+DROP TYPE microbin.paste_type;
 
 COMMIT;
