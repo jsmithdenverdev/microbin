@@ -2,3 +2,4 @@
 %project=microbin
 %uri=https://github.com/jsmithdenverdev/microbin
 
+appschema 2022-10-25T04:54:30Z Jake Smith <jsmithdenverdev@gmail.com> # Add schema for all paste objects.
