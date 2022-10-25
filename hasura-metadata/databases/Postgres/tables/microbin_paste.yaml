@@ -1,0 +1,9 @@
+table:
+  name: paste
+  schema: microbin
+computed_fields:
+  - name: content_base64
+    definition:
+      function:
+        name: paste_content_base64
+        schema: microbin
