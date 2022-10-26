@@ -2,6 +2,6 @@
 
 BEGIN;
 
-DROP FUNCTION IF EXISTS microbin.paste_content_base64;
+DROP FUNCTION IF EXISTS paste_content_base64;
 
 COMMIT;

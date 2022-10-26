@@ -3,17 +3,19 @@
 
 BEGIN;
 
-SET client_min_messages = 'warning';
+SET
+client_min_messages = 'warning';
 
-create or replace function microbin.paste_content_base64(paste_row microbin.paste) returns text
-    stable
-    language sql
-as
+CREATE
+OR REPLACE FUNCTION paste_content_base64(paste_row paste) RETURNS TEXT
+    STABLE
+    LANGUAGE SQL
+AS
 $$
-select encode("content", 'base64')
-from microbin.paste p
-$$;
+SELECT encode("content", 'base64')
+FROM paste P
+    $$;
 
-alter function microbin.paste_content_base64(microbin.paste) owner to postgres;
+ALTER FUNCTION paste_content_base64(paste) OWNER TO postgres;
 
 COMMIT;

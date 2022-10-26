@@ -10,6 +10,6 @@ SELECT id
      , content
      , expiration
      , metadata
-FROM microbin.paste
+FROM paste
 WHERE FALSE;
 ROLLBACK;

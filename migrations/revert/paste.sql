@@ -2,5 +2,5 @@
 
 BEGIN;
 
-DROP TABLE IF EXISTS microbin.paste;
+DROP TABLE IF EXISTS paste;
 COMMIT;
